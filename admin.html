@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admina - Trend Hair Studio</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>Panel Administratora</h1>
+            <p class="subtitle">Trend Hair Studio</p>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Nazwa użytkownika</label>
+                    <input type="text" id="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Hasło</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Zaloguj się</button>
+                
+                <p class="login-hint">Domyślne dane: admin / admin123</p>
+            </form>
+            
+            <a href="index.html" class="back-link">← Powrót do strony głównej</a>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="admin-logo">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/THS-logo-wWtRTpNiWsRErSYRopORlzFS0W6wyD.jpg" alt="Trend Hair Studio" class="logo-img">
+                </div>
+                <div class="header-actions">
+                    <div class="notification-bell" id="notificationBell">
+                        <span class="bell-icon">🔔</span>
+                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    </div>
+                    <span class="admin-name">Administrator</span>
+                    <button id="logoutBtn" class="btn btn-secondary">Wyloguj</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="tab-btn active" data-tab="bookings">Rezerwacje</button>
+            <button class="tab-btn" data-tab="blocked">Zablokowane daty</button>
+            <button class="tab-btn" data-tab="messages">Wiadomości</button>
+            <button class="tab-btn" data-tab="stats">Statystyki</button>
+        </nav>
+
+        <main class="admin-content">
+            <div id="bookingsTab" class="tab-content active">
+                <!-- Added stylist filter -->
+                <div class="filter-controls">
+                    <input type="date" id="filterDate" placeholder="Filtruj po dacie">
+                    <select id="filterStylist">
+                        <option value="">Wszyscy fryzjerzy</option>
+                        <option value="Anna Kowalska">Anna Kowalska</option>
+                        <option value="Maria Nowak">Maria Nowak</option>
+                    </select>
+                    <select id="filterService">
+                        <option value="">Wszystkie usługi</option>
+                        <option value="Strzyżenie damskie">Strzyżenie damskie</option>
+                        <option value="Strzyżenie męskie">Strzyżenie męskie</option>
+                        <option value="Koloryzacja">Koloryzacja</option>
+                        <option value="Pasemka">Pasemka</option>
+                        <option value="Stylizacja">Stylizacja</option>
+                        <option value="Pielęgnacja">Pielęgnacja</option>
+                        <option value="Upięcie">Upięcie</option>
+                    </select>
+                </div>
+                
+                <div id="bookingsList" class="bookings-list"></div>
+            </div>
+
+            <div id="blockedTab" class="tab-content">
+                <div class="tab-header-actions">
+                    <button id="addBlockBtn" class="btn btn-primary">+ Zablokuj datę</button>
+                </div>
+                
+                <div class="block-form" id="blockForm" style="display: none;">
+                    <h3>Dodaj zablokowaną datę</h3>
+                    <form id="blockDateForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="blockStartDate">Data od</label>
+                                <input type="date" id="blockStartDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="blockEndDate">Data do</label>
+                                <input type="date" id="blockEndDate" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="blockReason">Powód (opcjonalnie)</label>
+                            <input type="text" id="blockReason" placeholder="np. Wakacje, Święta">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Zablokuj</button>
+                            <button type="button" id="cancelBlockBtn" class="btn btn-secondary">Anuluj</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="blockedDatesList" class="blocked-dates-list"></div>
+            </div>
+
+            <div id="messagesTab" class="tab-content">
+                <div class="filter-controls">
+                    <select id="filterMessageStatus">
+                        <option value="">Wszystkie wiadomości</option>
+                        <option value="unread">Nieprzeczytane</option>
+                        <option value="read">Przeczytane</option>
+                    </select>
+                </div>
+                
+                <div id="messagesList" class="messages-list"></div>
+            </div>
+
+            <div id="statsTab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Wszystkie rezerwacje</h3>
+                        <p class="stat-number" id="totalBookings">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Dzisiejsze wizyty</h3>
+                        <p class="stat-number" id="todayBookings">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Nadchodzące wizyty</h3>
+                        <p class="stat-number" id="upcomingBookings">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Najpopularniejsza usługa</h3>
+                        <p class="stat-text" id="popularService">-</p>
+                    </div>
+                </div>
+                
+                <div class="services-breakdown">
+                    <h3>Rozkład usług</h3>
+                    <div id="servicesChart" class="services-chart"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditModal">&times;</span>
+            <h2>Edytuj rezerwację</h2>
+            <form id="editBookingForm">
+                <input type="hidden" id="editBookingId">
+                <input type="hidden" id="editBookingStylist">
+                <div class="form-group">
+                    <label for="editDate">Data</label>
+                    <input type="date" id="editDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTime">Godzina</label>
+                    <select id="editTime" required>
+                        <option value="">Wybierz godzinę</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn">Anuluj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2>Potwierdzenie</h2>
+            <p id="confirmMessage"></p>
+            <div class="form-actions">
+                <button id="confirmYes" class="btn btn-primary">Tak</button>
+                <button id="confirmNo" class="btn btn-secondary">Nie</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeMessageModal">&times;</span>
+            <h2>Szczegóły wiadomości</h2>
+            <div id="messageDetails"></div>
+            <div class="form-actions">
+                <button id="markAsReadBtn" class="btn btn-primary">Oznacz jako przeczytane</button>
+                <button id="deleteMessageBtn" class="btn btn-danger">Usuń wiadomość</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="admin-script.js"></script>
+</body>
+</html>
