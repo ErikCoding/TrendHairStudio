@@ -1,7 +1,16 @@
-// Admin credentials (in production, this should be handled server-side)
 const ADMIN_CREDENTIALS = {
-  username: "admin",
-  password: "admin123",
+  manager: {
+    username: "admin",
+    password: "admin123",
+    role: "manager",
+    displayName: "Menedżer",
+  },
+  employee: {
+    username: "pracownik",
+    password: "pracownik123",
+    role: "employee",
+    displayName: "Pracownik",
+  },
 }
 
 // Opening Hours Configuration
@@ -16,6 +25,7 @@ const openingHours = {
 }
 
 let isLoggedIn = false
+let currentUser = null
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
 import {
@@ -26,6 +36,7 @@ import {
   remove,
   update,
   onValue,
+  set,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // Firebase configuration - User needs to replace with their own config
@@ -40,14 +51,23 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase
-let app, database, bookingsRef, blockedDatesRef, blockInfoRef, contactMessagesRef
+let app,
+  database,
+  bookingsRef,
+  blockedDatesRef,
+  blockInfoRef,
+  contactMessagesRef,
+  employeeBlockedDatesRef,
+  employeeBlockInfoRef
 try {
   app = initializeApp(firebaseConfig)
   database = getDatabase(app)
   bookingsRef = ref(database, "bookings")
   blockedDatesRef = ref(database, "blockedDates")
   blockInfoRef = ref(database, "blockInfo")
-  contactMessagesRef = ref(database, "contactMessages") // Added contactMessagesRef for reading contact messages
+  contactMessagesRef = ref(database, "contactMessages")
+  employeeBlockedDatesRef = ref(database, "employeeBlockedDates")
+  employeeBlockInfoRef = ref(database, "employeeBlockInfo")
   console.log("[v0] Firebase initialized successfully")
 } catch (error) {
   console.error("[v0] Firebase initialization error:", error)
@@ -66,9 +86,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Check session storage
   isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true"
+  const storedUser = sessionStorage.getItem("currentUser")
+  if (storedUser) {
+    currentUser = JSON.parse(storedUser)
+  }
   console.log("[v0] isLoggedIn:", isLoggedIn)
 
-  if (isLoggedIn) {
+  if (isLoggedIn && currentUser) {
     showDashboard()
   } else {
     showLogin()
@@ -94,10 +118,20 @@ function handleLogin(e) {
 
   console.log("[v0] Checking credentials...")
 
-  if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-    console.log("[v0] Credentials correct, logging in")
+  let foundUser = null
+  for (const [key, user] of Object.entries(ADMIN_CREDENTIALS)) {
+    if (username === user.username && password === user.password) {
+      foundUser = user
+      break
+    }
+  }
+
+  if (foundUser) {
+    console.log("[v0] Credentials correct, logging in as", foundUser.role)
     sessionStorage.setItem("adminLoggedIn", "true")
+    sessionStorage.setItem("currentUser", JSON.stringify(foundUser))
     isLoggedIn = true
+    currentUser = foundUser
     showDashboard()
   } else {
     console.log("[v0] Credentials incorrect")
@@ -108,7 +142,9 @@ function handleLogin(e) {
 function handleLogout() {
   console.log("[v0] Logging out")
   sessionStorage.removeItem("adminLoggedIn")
+  sessionStorage.removeItem("currentUser")
   isLoggedIn = false
+  currentUser = null
   showLogin()
 }
 
@@ -143,6 +179,21 @@ function showDashboard() {
   loginScreen.style.display = "none"
   adminDashboard.style.display = "block"
 
+  const adminNameElement = document.getElementById("adminName")
+  if (adminNameElement && currentUser) {
+    adminNameElement.textContent = currentUser.displayName
+  }
+
+  if (currentUser && currentUser.role === "manager") {
+    // Manager can see everything
+    document.getElementById("employeeScheduleTab").style.display = "block"
+    document.getElementById("blockDateActions").style.display = "block"
+  } else {
+    // Employee cannot see employee schedule or block dates
+    document.getElementById("employeeScheduleTab").style.display = "none"
+    document.getElementById("blockDateActions").style.display = "none"
+  }
+
   console.log("[v0] Dashboard displayed")
 
   // Load data
@@ -150,6 +201,9 @@ function showDashboard() {
     try {
       loadBookings()
       loadBlockedDates()
+      if (currentUser && currentUser.role === "manager") {
+        loadEmployeeBlockedDates()
+      }
       updateStatistics()
       setupBookingListener()
     } catch (error) {
@@ -332,8 +386,9 @@ tabButtons.forEach((button) => {
       loadBookings()
     } else if (tabName === "blocked") {
       loadBlockedDates()
+    } else if (tabName === "employee-schedule") {
+      loadEmployeeBlockedDates()
     } else if (tabName === "messages") {
-      // Added messages tab handler
       loadMessages()
     } else if (tabName === "stats") {
       updateStatistics()
@@ -375,7 +430,8 @@ function editBooking(id) {
 }
 
 async function updateEditTimeSlots(dateString, currentTime, stylist) {
-  const date = new Date(dateString + "T00:00:00")
+  const [year, month, day] = dateString.split("-").map(Number)
+  const date = new Date(year, month - 1, day)
   const dayOfWeek = date.getDay()
   const hours = openingHours[dayOfWeek]
   const editTimeSelect = document.getElementById("editTime")
@@ -451,7 +507,9 @@ document.getElementById("cancelEditBtn")?.addEventListener("click", () => {
 })
 
 document.getElementById("addBlockBtn")?.addEventListener("click", () => {
-  document.getElementById("blockForm").style.display = "block"
+  if (currentUser && currentUser.role === "manager") {
+    document.getElementById("blockForm").style.display = "block"
+  }
 })
 
 document.getElementById("cancelBlockBtn")?.addEventListener("click", () => {
@@ -472,11 +530,15 @@ document.getElementById("blockDateForm")?.addEventListener("submit", async (e) =
   }
 
   const dates = []
-  const current = new Date(startDate)
-  const end = new Date(endDate)
+  const [startYear, startMonth, startDay] = startDate.split("-").map(Number)
+  const [endYear, endMonth, endDay] = endDate.split("-").map(Number)
+
+  const current = new Date(startYear, startMonth - 1, startDay)
+  const end = new Date(endYear, endMonth - 1, endDay)
 
   while (current <= end) {
-    dates.push(current.toISOString().split("T")[0])
+    const dateString = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
+    dates.push(dateString)
     current.setDate(current.getDate() + 1)
   }
 
@@ -522,6 +584,8 @@ async function loadBlockedDates() {
     ...blockInfoData[key],
   }))
 
+  const canDelete = currentUser && currentUser.role === "manager"
+
   blockedDatesList.innerHTML = blocks
     .map(
       (block) => `
@@ -530,7 +594,7 @@ async function loadBlockedDates() {
                 <h4>${block.startDate} - ${block.endDate}</h4>
                 <p>${block.reason}</p>
             </div>
-            <button class="btn btn-danger" onclick="unblockDates('${block.id}')">Odblokuj</button>
+            ${canDelete ? `<button class="btn btn-danger" onclick="unblockDates('${block.id}')">Odblokuj</button>` : ""}
         </div>
     `,
     )
@@ -564,6 +628,247 @@ async function unblockDates(blockId) {
   })
 }
 
+document.getElementById("addEmployeeBlockBtn")?.addEventListener("click", () => {
+  document.getElementById("employeeBlockForm").style.display = "block"
+})
+
+document.getElementById("cancelEmployeeBlockBtn")?.addEventListener("click", () => {
+  document.getElementById("employeeBlockForm").style.display = "none"
+  document.getElementById("employeeBlockDateForm").reset()
+})
+
+document.getElementById("employeeBlockDateForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const employee = document.getElementById("blockEmployee").value
+  const startDate = document.getElementById("empBlockStartDate").value
+  const endDate = document.getElementById("empBlockEndDate").value
+  const reason = document.getElementById("empBlockReason").value
+
+  if (new Date(startDate) > new Date(endDate)) {
+    alert("Data końcowa nie może być wcześniejsza niż data początkowa!")
+    return
+  }
+
+  const dates = []
+  const [startYear, startMonth, startDay] = startDate.split("-").map(Number)
+  const [endYear, endMonth, endDay] = endDate.split("-").map(Number)
+
+  const current = new Date(startYear, startMonth - 1, startDay)
+  const end = new Date(endYear, endMonth - 1, endDay)
+
+  while (current <= end) {
+    const dateString = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
+    dates.push(dateString)
+    current.setDate(current.getDate() + 1)
+  }
+
+  try {
+    // Get existing blocked dates for this employee
+    const empBlockedRef = ref(database, `employeeBlockedDates/${employee}`)
+    const snapshot = await get(empBlockedRef)
+    let existingDates = []
+
+    if (snapshot.exists()) {
+      existingDates = snapshot.val()
+    }
+
+    // Merge with new dates
+    const allDates = [...new Set([...existingDates, ...dates])]
+
+    // Update employee blocked dates
+    await set(empBlockedRef, allDates)
+
+    // Save block info
+    await push(employeeBlockInfoRef, {
+      employee,
+      startDate,
+      endDate,
+      reason: reason || "Brak powodu",
+      dates,
+    })
+
+    document.getElementById("employeeBlockForm").style.display = "none"
+    document.getElementById("employeeBlockDateForm").reset()
+    loadEmployeeBlockedDates()
+  } catch (error) {
+    console.error("[v0] Error blocking employee dates:", error)
+    alert("Wystąpił błąd podczas blokowania dat")
+  }
+})
+
+async function loadEmployeeBlockedDates() {
+  if (!database) {
+    document.getElementById("employeeBlockedDatesList").innerHTML =
+      '<div class="empty-state">Firebase nie jest skonfigurowany</div>'
+    return
+  }
+
+  const snapshot = await get(employeeBlockInfoRef)
+  const employeeBlockedDatesList = document.getElementById("employeeBlockedDatesList")
+
+  if (!snapshot.exists()) {
+    employeeBlockedDatesList.innerHTML = '<div class="empty-state">Brak zablokowanych dat dla pracowników</div>'
+    return
+  }
+
+  const blockInfoData = snapshot.val()
+  const blocks = Object.keys(blockInfoData).map((key) => ({
+    id: key,
+    ...blockInfoData[key],
+  }))
+
+  employeeBlockedDatesList.innerHTML = blocks
+    .map(
+      (block) => `
+        <div class="blocked-date-card">
+            <div class="blocked-date-info">
+                <h4>${block.employee}: ${block.startDate} - ${block.endDate}</h4>
+                <p>${block.reason}</p>
+            </div>
+            <button class="btn btn-danger" onclick="unblockEmployeeDates('${block.id}', '${block.employee}')">Odblokuj</button>
+        </div>
+    `,
+    )
+    .join("")
+}
+
+async function unblockEmployeeDates(blockId, employee) {
+  showConfirmModal("Czy na pewno chcesz odblokować te daty?", async () => {
+    try {
+      const snapshot = await get(ref(database, `employeeBlockInfo/${blockId}`))
+      if (snapshot.exists()) {
+        const block = snapshot.val()
+
+        // Get current blocked dates for employee
+        const empBlockedRef = ref(database, `employeeBlockedDates/${employee}`)
+        const empSnapshot = await get(empBlockedRef)
+
+        if (empSnapshot.exists()) {
+          let existingDates = empSnapshot.val()
+          // Remove the dates from this block
+          existingDates = existingDates.filter((date) => !block.dates.includes(date))
+
+          if (existingDates.length > 0) {
+            await set(empBlockedRef, existingDates)
+          } else {
+            await remove(empBlockedRef)
+          }
+        }
+
+        await remove(ref(database, `employeeBlockInfo/${blockId}`))
+        loadEmployeeBlockedDates()
+      }
+    } catch (error) {
+      console.error("[v0] Error unblocking employee dates:", error)
+      alert("Wystąpił błąd podczas odblokowywania dat")
+    }
+  })
+}
+
+document.getElementById("addManualBookingBtn")?.addEventListener("click", () => {
+  document.getElementById("manualBookingModal").style.display = "block"
+})
+
+document.getElementById("closeManualBookingModal")?.addEventListener("click", () => {
+  document.getElementById("manualBookingModal").style.display = "none"
+})
+
+document.getElementById("cancelManualBookingBtn")?.addEventListener("click", () => {
+  document.getElementById("manualBookingModal").style.display = "none"
+})
+
+document.getElementById("manualDate")?.addEventListener("change", async (e) => {
+  const dateString = e.target.value
+  const stylist = document.getElementById("manualStylist").value
+
+  if (!stylist) return
+
+  await updateManualTimeSlots(dateString, stylist)
+})
+
+document.getElementById("manualStylist")?.addEventListener("change", async (e) => {
+  const dateString = document.getElementById("manualDate").value
+  const stylist = e.target.value
+
+  if (!dateString) return
+
+  await updateManualTimeSlots(dateString, stylist)
+})
+
+async function updateManualTimeSlots(dateString, stylist) {
+  const [year, month, day] = dateString.split("-").map(Number)
+  const date = new Date(year, month - 1, day)
+  const dayOfWeek = date.getDay()
+  const hours = openingHours[dayOfWeek]
+  const manualTimeSelect = document.getElementById("manualTime")
+
+  manualTimeSelect.innerHTML = '<option value="">Wybierz godzinę</option>'
+
+  if (!hours) {
+    manualTimeSelect.innerHTML = '<option value="">Salon nieczynny w tym dniu</option>'
+    return
+  }
+
+  const slots = []
+  for (let hour = hours.start; hour < hours.end; hour++) {
+    slots.push(`${hour.toString().padStart(2, "0")}:00`)
+    if (hour + 0.5 < hours.end) {
+      slots.push(`${hour.toString().padStart(2, "0")}:30`)
+    }
+  }
+
+  const snapshot = await get(bookingsRef)
+  const bookings = snapshot.exists() ? Object.values(snapshot.val()) : []
+
+  const bookedSlots = bookings.filter((b) => b.date === dateString && b.stylist === stylist).map((b) => b.time)
+
+  slots.forEach((slot) => {
+    const option = document.createElement("option")
+    option.value = slot
+    option.textContent = slot
+
+    if (bookedSlots.includes(slot)) {
+      option.disabled = true
+      option.textContent = `${slot} (zajęte)`
+    }
+
+    manualTimeSelect.appendChild(option)
+  })
+}
+
+document.getElementById("manualBookingForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const booking = {
+    name: document.getElementById("manualClientName").value,
+    phone: document.getElementById("manualClientPhone").value,
+    email: document.getElementById("manualClientEmail").value,
+    service: document.getElementById("manualService").value,
+    stylist: document.getElementById("manualStylist").value,
+    date: document.getElementById("manualDate").value,
+    time: document.getElementById("manualTime").value,
+    notes: document.getElementById("manualNotes").value,
+    createdAt: new Date().toISOString(),
+    status: "confirmed",
+    addedBy: currentUser ? currentUser.displayName : "Admin",
+  }
+
+  try {
+    const newBookingRef = push(bookingsRef)
+    await set(newBookingRef, booking)
+
+    document.getElementById("manualBookingModal").style.display = "none"
+    document.getElementById("manualBookingForm").reset()
+    loadBookings()
+    updateStatistics()
+    alert("Wizyta została dodana pomyślnie!")
+  } catch (error) {
+    console.error("[v0] Error adding manual booking:", error)
+    alert("Wystąpił błąd podczas dodawania wizyty")
+  }
+})
+
 async function updateStatistics() {
   if (!database) {
     document.getElementById("totalBookings").textContent = "0"
@@ -576,7 +881,8 @@ async function updateStatistics() {
   }
 
   const snapshot = await get(bookingsRef)
-  const today = new Date().toISOString().split("T")[0]
+  const today = new Date()
+  const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
   if (!snapshot.exists()) {
     document.getElementById("totalBookings").textContent = "0"
@@ -592,10 +898,10 @@ async function updateStatistics() {
 
   document.getElementById("totalBookings").textContent = bookings.length
 
-  const todayBookings = bookings.filter((b) => b.date === today).length
+  const todayBookings = bookings.filter((b) => b.date === todayString).length
   document.getElementById("todayBookings").textContent = todayBookings
 
-  const upcomingBookings = bookings.filter((b) => b.date >= today).length
+  const upcomingBookings = bookings.filter((b) => b.date >= todayString).length
   document.getElementById("upcomingBookings").textContent = upcomingBookings
 
   const serviceCounts = {}
@@ -658,7 +964,8 @@ function showConfirmModal(message, onConfirm) {
 window.addEventListener("click", (e) => {
   const editModal = document.getElementById("editModal")
   const confirmModal = document.getElementById("confirmModal")
-  const messageModal = document.getElementById("messageModal") // Added message modal
+  const messageModal = document.getElementById("messageModal")
+  const manualBookingModal = document.getElementById("manualBookingModal")
 
   if (e.target === editModal) {
     editModal.style.display = "none"
@@ -667,14 +974,17 @@ window.addEventListener("click", (e) => {
     confirmModal.style.display = "none"
   }
   if (e.target === messageModal) {
-    // Close message modal on outside click
     messageModal.style.display = "none"
+  }
+  if (e.target === manualBookingModal) {
+    manualBookingModal.style.display = "none"
   }
 })
 
 window.deleteBooking = deleteBooking
 window.editBooking = editBooking
 window.unblockDates = unblockDates
+window.unblockEmployeeDates = unblockEmployeeDates
 
 document.getElementById("filterDate")?.addEventListener("change", (e) => {
   const filterDate = e.target.value

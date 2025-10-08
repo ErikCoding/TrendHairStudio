@@ -25,7 +25,8 @@
                 
                 <button type="submit" class="btn btn-primary">Zaloguj się</button>
                 
-                <p class="login-hint">Domyślne dane: admin / admin123</p>
+                <!-- Updated login hint to show multiple user types -->
+                <p class="login-hint">Menedżer: admin / admin123<br>Pracownik: pracownik / pracownik123</p>
             </form>
             
             <a href="index.html" class="back-link">← Powrót do strony głównej</a>
@@ -43,7 +44,8 @@
                         <span class="bell-icon">🔔</span>
                         <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                     </div>
-                    <span class="admin-name">Administrator</span>
+                    <!-- Added user role display -->
+                    <span class="admin-name" id="adminName">Administrator</span>
                     <button id="logoutBtn" class="btn btn-secondary">Wyloguj</button>
                 </div>
             </div>
@@ -52,13 +54,19 @@
         <nav class="admin-nav">
             <button class="tab-btn active" data-tab="bookings">Rezerwacje</button>
             <button class="tab-btn" data-tab="blocked">Zablokowane daty</button>
+            <!-- Added employee schedule tab (manager only) -->
+            <button class="tab-btn" data-tab="employee-schedule" id="employeeScheduleTab" style="display: none;">Grafik pracowników</button>
             <button class="tab-btn" data-tab="messages">Wiadomości</button>
             <button class="tab-btn" data-tab="stats">Statystyki</button>
         </nav>
 
         <main class="admin-content">
             <div id="bookingsTab" class="tab-content active">
-                <!-- Added stylist filter -->
+                <!-- Added manual booking button -->
+                <div class="tab-header-actions">
+                    <button id="addManualBookingBtn" class="btn btn-primary">+ Dodaj wizytę</button>
+                </div>
+                
                 <div class="filter-controls">
                     <input type="date" id="filterDate" placeholder="Filtruj po dacie">
                     <select id="filterStylist">
@@ -82,7 +90,8 @@
             </div>
 
             <div id="blockedTab" class="tab-content">
-                <div class="tab-header-actions">
+                <!-- Block button only visible for managers -->
+                <div class="tab-header-actions" id="blockDateActions">
                     <button id="addBlockBtn" class="btn btn-primary">+ Zablokuj datę</button>
                 </div>
                 
@@ -111,6 +120,47 @@
                 </div>
                 
                 <div id="blockedDatesList" class="blocked-dates-list"></div>
+            </div>
+
+            <!-- Added employee schedule tab -->
+            <div id="employee-scheduleTab" class="tab-content">
+                <div class="tab-header-actions">
+                    <button id="addEmployeeBlockBtn" class="btn btn-primary">+ Zablokuj dni dla pracownika</button>
+                </div>
+                
+                <div class="block-form" id="employeeBlockForm" style="display: none;">
+                    <h3>Zablokuj dni dla pracownika</h3>
+                    <form id="employeeBlockDateForm">
+                        <div class="form-group">
+                            <label for="blockEmployee">Pracownik</label>
+                            <select id="blockEmployee" required>
+                                <option value="">Wybierz pracownika</option>
+                                <option value="Anna Kowalska">Anna Kowalska</option>
+                                <option value="Maria Nowak">Maria Nowak</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="empBlockStartDate">Data od</label>
+                                <input type="date" id="empBlockStartDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="empBlockEndDate">Data do</label>
+                                <input type="date" id="empBlockEndDate" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="empBlockReason">Powód (opcjonalnie)</label>
+                            <input type="text" id="empBlockReason" placeholder="np. Urlop, Choroba">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Zablokuj</button>
+                            <button type="button" id="cancelEmployeeBlockBtn" class="btn btn-secondary">Anuluj</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="employeeBlockedDatesList" class="blocked-dates-list"></div>
             </div>
 
             <div id="messagesTab" class="tab-content">
@@ -151,6 +201,67 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Added manual booking modal -->
+    <div id="manualBookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeManualBookingModal">&times;</span>
+            <h2>Dodaj wizytę</h2>
+            <form id="manualBookingForm">
+                <div class="form-group">
+                    <label for="manualClientName">Imię i nazwisko *</label>
+                    <input type="text" id="manualClientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="manualClientPhone">Telefon *</label>
+                    <input type="tel" id="manualClientPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="manualClientEmail">Email</label>
+                    <input type="email" id="manualClientEmail">
+                </div>
+                <div class="form-group">
+                    <label for="manualService">Usługa *</label>
+                    <select id="manualService" required>
+                        <option value="">Wybierz usługę</option>
+                        <option value="Strzyżenie damskie">Strzyżenie damskie</option>
+                        <option value="Strzyżenie męskie">Strzyżenie męskie</option>
+                        <option value="Koloryzacja">Koloryzacja</option>
+                        <option value="Pasemka">Pasemka</option>
+                        <option value="Stylizacja">Stylizacja</option>
+                        <option value="Pielęgnacja">Pielęgnacja</option>
+                        <option value="Upięcie">Upięcie</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="manualStylist">Fryzjer *</label>
+                    <select id="manualStylist" required>
+                        <option value="">Wybierz fryzjera</option>
+                        <option value="Anna Kowalska">Anna Kowalska</option>
+                        <option value="Maria Nowak">Maria Nowak</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="manualDate">Data *</label>
+                    <input type="date" id="manualDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="manualTime">Godzina *</label>
+                    <select id="manualTime" required>
+                        <option value="">Wybierz godzinę</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="manualNotes">Uwagi</label>
+                    <textarea id="manualNotes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Dodaj wizytę</button>
+                    <button type="button" class="btn btn-secondary" id="cancelManualBookingBtn">Anuluj</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div id="editModal" class="modal">

@@ -41,6 +41,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
+  /* Added smooth transition for navbar */
+  transition: var(--transition);
 }
 
 .nav-content {
@@ -60,11 +62,19 @@ body {
   text-decoration: none;
   display: flex;
   align-items: center;
+  /* Added smooth transition */
+  transition: var(--transition);
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
 
 .logo-img {
   height: 60px;
   width: auto;
+  /* Added smooth transition */
+  transition: var(--transition);
 }
 
 .nav-links {
@@ -79,10 +89,14 @@ body {
   color: var(--color-text);
   font-size: 0.95rem;
   transition: var(--transition);
+  /* Added padding for better click area on mobile */
+  padding: 0.5rem 0;
 }
 
 .nav-links a:hover {
   color: var(--color-primary);
+  /* Added transform for smooth hover effect */
+  transform: translateY(-2px);
 }
 
 .menu-toggle {
@@ -92,6 +106,8 @@ body {
   border: none;
   cursor: pointer;
   gap: 5px;
+  /* Added padding for better touch target on mobile */
+  padding: 0.5rem;
 }
 
 .menu-toggle span {
@@ -103,11 +119,11 @@ body {
 
 /* Hero Section */
 .hero {
+  /* Fixed background image for better mobile responsiveness */
   background-image: url("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Interior-Photo-3-uQ3eRi0ahAtZVrZbphsqSdXF3TAnkr.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -125,6 +141,8 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1;
+  /* Added smooth transition */
+  transition: var(--transition);
 }
 
 .hero .container {
@@ -135,6 +153,20 @@ body {
 .hero-content {
   max-width: 700px;
   margin: 0 auto;
+  /* Added animation */
+  animation: fadeInUp 1s ease;
+}
+
+/* Added fade in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-title {
@@ -165,6 +197,11 @@ body {
   border: none;
   cursor: pointer;
   font-size: 1rem;
+  /* Added active state for mobile tap feedback */
+}
+
+.btn:active {
+  transform: scale(0.95);
 }
 
 .btn-primary {
@@ -204,6 +241,8 @@ section {
   text-align: center;
   transition: var(--transition);
   border: 2px solid transparent;
+  /* Added cursor pointer for better UX */
+  cursor: pointer;
 }
 
 .service-card:hover {
@@ -212,9 +251,20 @@ section {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
+/* Added active state for mobile tap feedback */
+.service-card:active {
+  transform: translateY(-2px);
+}
+
 .service-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+  /* Added transition */
+  transition: var(--transition);
+}
+
+.service-card:hover .service-icon {
+  transform: scale(1.1);
 }
 
 .service-card h3 {
@@ -237,6 +287,12 @@ section {
   padding: 0.5rem 1.5rem;
   border-radius: 20px;
   font-weight: 600;
+  /* Added transition */
+  transition: var(--transition);
+}
+
+.service-card:hover .price {
+  transform: scale(1.05);
 }
 
 /* Gallery Section */
@@ -257,6 +313,12 @@ section {
   border-radius: 15px;
   aspect-ratio: 1;
   cursor: pointer;
+  /* Added box shadow transition */
+  transition: var(--transition);
+}
+
+.gallery-item:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .gallery-item img {
@@ -268,6 +330,11 @@ section {
 
 .gallery-item:hover img {
   transform: scale(1.1);
+}
+
+/* Added active state for mobile */
+.gallery-item:active {
+  transform: scale(0.98);
 }
 
 /* Booking Section */
@@ -307,6 +374,15 @@ section {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Added transition */
+  transition: var(--transition);
+}
+
+.hours-list li:hover {
+  background-color: var(--color-background-alt);
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 8px;
 }
 
 .hours-list li:last-child {
@@ -388,10 +464,18 @@ section {
   cursor: pointer;
   padding: 0.5rem 1rem;
   transition: var(--transition);
+  /* Added border radius for better mobile touch */
+  border-radius: 8px;
 }
 
 .calendar-nav:hover {
   color: var(--color-accent);
+  background-color: rgba(201, 169, 97, 0.1);
+}
+
+/* Added active state for mobile */
+.calendar-nav:active {
+  transform: scale(0.9);
 }
 
 .calendar-grid {
@@ -419,6 +503,8 @@ section {
   font-size: 0.9rem;
   border: 2px solid transparent;
   background-color: var(--color-white);
+  /* Added better touch feedback */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .calendar-day.other-month {
@@ -451,10 +537,28 @@ section {
   background-color: #105c11ce;
 }
 
+/* Added active state for mobile */
+.calendar-day.available:active {
+  transform: scale(0.95);
+}
+
 .calendar-day.selected {
   background-color: var(--color-primary);
   color: var(--color-secondary);
   font-weight: 600;
+  /* Added animation */
+  animation: pulse 0.3s ease;
+}
+
+/* Added pulse animation for selected day */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 .calendar-day.today {
@@ -485,11 +589,19 @@ section {
   transition: var(--transition);
   background-color: var(--color-white);
   font-size: 0.9rem;
+  /* Added better touch feedback */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .time-slot:hover {
   border-color: var(--color-primary);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Added active state for mobile */
+.time-slot:active {
+  transform: scale(0.95);
 }
 
 .time-slot.selected {
@@ -497,6 +609,8 @@ section {
   color: var(--color-secondary);
   border-color: var(--color-primary);
   font-weight: 600;
+  /* Added animation */
+  animation: pulse 0.3s ease;
 }
 
 .time-slot.booked {
@@ -544,6 +658,7 @@ section {
 
 .contact-item a:hover {
   text-decoration: underline;
+  color: var(--color-accent);
 }
 
 .map-container {
@@ -613,10 +728,13 @@ section {
   color: var(--color-text-light);
   cursor: pointer;
   transition: var(--transition);
+  /* Added padding for better touch target */
+  padding: 0.5rem;
 }
 
 .close:hover {
   color: var(--color-primary);
+  transform: rotate(90deg);
 }
 
 /* Footer */
@@ -656,6 +774,7 @@ section {
 
 .footer-section a:hover {
   opacity: 1;
+  color: var(--color-primary);
 }
 
 .footer-bottom {
@@ -706,6 +825,20 @@ section {
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     display: none;
     z-index: 999;
+    /* Added animation for mobile menu */
+    animation: slideDown 0.3s ease;
+  }
+
+  /* Added slide down animation */
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .nav-links.active {
@@ -715,7 +848,8 @@ section {
   .hero {
     min-height: 100vh;
     padding: 2rem 1rem;
-    background-attachment: fixed;
+    /* Changed to scroll for better mobile performance */
+    background-attachment: scroll;
   }
 
   .hero-title {
@@ -822,6 +956,8 @@ section {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
+  /* Added box shadow for better focus indication */
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
 }
 
 .form-group textarea {

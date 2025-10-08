@@ -45,6 +45,18 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   max-width: 450px;
   width: 100%;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-container h1 {
@@ -85,6 +97,7 @@ body {
 .login-form input:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
 }
 
 .login-hint {
@@ -92,6 +105,7 @@ body {
   color: var(--color-text-light);
   font-size: 0.9rem;
   margin-top: 1rem;
+  line-height: 1.6;
 }
 
 .back-link {
@@ -105,6 +119,7 @@ body {
 
 .back-link:hover {
   text-decoration: underline;
+  color: var(--color-accent);
 }
 
 /* Buttons */
@@ -118,6 +133,11 @@ body {
   font-weight: 500;
   transition: var(--transition);
   text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active {
+  transform: scale(0.95);
 }
 
 .btn-primary {
@@ -128,6 +148,7 @@ body {
 
 .btn-primary:hover {
   background-color: var(--color-accent);
+  box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);
 }
 
 .btn-secondary {
@@ -148,6 +169,7 @@ body {
 
 .btn-danger:hover {
   background-color: #c9302c;
+  box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
 }
 
 .btn-success {
@@ -159,6 +181,7 @@ body {
 
 .btn-success:hover {
   background-color: #4cae4c;
+  box-shadow: 0 4px 12px rgba(92, 184, 92, 0.3);
 }
 
 /* Admin Dashboard */
@@ -297,6 +320,11 @@ body {
 
 .tab-btn:hover {
   color: var(--color-primary);
+  background-color: rgba(201, 169, 97, 0.05);
+}
+
+.tab-btn:active {
+  transform: scale(0.95);
 }
 
 .tab-btn.active {
@@ -320,6 +348,10 @@ body {
   gap: 1.5rem;
   align-items: center;
   transition: var(--transition);
+}
+
+.booking-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .booking-card.new-booking {
@@ -393,6 +425,7 @@ body {
   border-radius: 12px;
   margin-bottom: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.3s ease;
 }
 
 .block-form h3 {
@@ -419,18 +452,27 @@ body {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.75rem;
   border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
+  transition: var(--transition);
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .form-actions {
@@ -456,6 +498,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: var(--transition);
+}
+
+.blocked-date-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .blocked-date-info h4 {
@@ -482,6 +529,12 @@ body {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card h3 {
@@ -574,6 +627,10 @@ body {
 .message-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.message-card:active {
+  transform: scale(0.98);
 }
 
 .message-card.unread {
@@ -670,6 +727,16 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -679,6 +746,18 @@ body {
   border-radius: 15px;
   max-width: 500px;
   position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-content h2 {
@@ -696,10 +775,12 @@ body {
   color: var(--color-text-light);
   cursor: pointer;
   transition: var(--transition);
+  padding: 0.5rem;
 }
 
 .close:hover {
   color: var(--color-primary);
+  transform: rotate(90deg);
 }
 
 /* Responsive Design */

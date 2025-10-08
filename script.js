@@ -31,7 +31,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 const openingHours = {
   0: null, // Sunday - closed
   1: null, // Monday - closed
-  2: { start: 9, end: 18 }, // Tuesday
+  2: { start: 9, end: 18 }, // Tuesday - NOW OPEN
   3: { start: 9, end: 18 }, // Wednesday
   4: { start: 9, end: 18 }, // Thursday
   5: { start: 9, end: 18 }, // Friday
@@ -53,13 +53,14 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase
-let app, database, bookingsRef, blockedDatesRef, contactMessagesRef
+let app, database, bookingsRef, blockedDatesRef, contactMessagesRef, employeeBlockedDatesRef
 try {
   app = initializeApp(firebaseConfig)
   database = getDatabase(app)
   bookingsRef = ref(database, "bookings")
   blockedDatesRef = ref(database, "blockedDates")
   contactMessagesRef = ref(database, "contactMessages") // New reference for contact messages
+  employeeBlockedDatesRef = ref(database, "employeeBlockedDates") // Added reference for employee-specific blocked dates
   console.log("[v0] Firebase initialized successfully")
 } catch (error) {
   console.error("[v0] Firebase initialization error:", error)
@@ -73,6 +74,7 @@ let selectedTime = null
 let selectedStylist = null
 let blockedDatesCache = []
 let bookingsCache = []
+let employeeBlockedDatesCache = {} // Added cache for employee blocked dates
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[v0] DOM loaded, initializing calendar")
@@ -116,6 +118,7 @@ function initCalendar() {
   if (stylistSelect) {
     stylistSelect.addEventListener("change", (e) => {
       selectedStylist = e.target.value
+      renderCalendar() // Re-render calendar when stylist changes to show employee-specific blocked dates
       if (selectedDate && selectedStylist) {
         updateTimeSlots()
       }
@@ -158,11 +161,13 @@ async function renderCalendar() {
     if (database) {
       blockedDatesCache = await getBlockedDates()
       bookingsCache = await getAllBookings()
+      employeeBlockedDatesCache = await getEmployeeBlockedDates() // Get employee-specific blocked dates
     }
   } catch (error) {
     console.log("[v0] Could not fetch data from Firebase:", error)
     blockedDatesCache = []
     bookingsCache = []
+    employeeBlockedDatesCache = {}
   }
 
   const firstDay = new Date(year, month, 1)
@@ -205,7 +210,7 @@ async function renderCalendar() {
   for (let i = 1; i <= lastDate; i++) {
     const day = document.createElement("div")
     const currentDate = new Date(year, month, i)
-    const dateString = currentDate.toISOString().split("T")[0]
+    const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}` // Fixed date string to use local date without timezone offset
     const dayOfWeek = currentDate.getDay()
 
     day.className = "calendar-day"
@@ -223,9 +228,10 @@ async function renderCalendar() {
     // Check if closed (Sunday or Monday)
     else if (dayOfWeek === 0 || dayOfWeek === 1) {
       day.classList.add("closed")
-    }
-    // Check if blocked
-    else if (blockedDatesCache.includes(dateString)) {
+    } else if (
+      blockedDatesCache.includes(dateString) ||
+      (selectedStylist && employeeBlockedDatesCache[selectedStylist]?.includes(dateString))
+    ) {
       day.classList.add("blocked")
     }
     // Available
@@ -277,7 +283,8 @@ function selectDate(dateString, dayElement) {
 async function updateTimeSlots() {
   if (!selectedDate || !selectedStylist) return
 
-  const date = new Date(selectedDate + "T00:00:00")
+  const [year, month, day] = selectedDate.split("-").map(Number)
+  const date = new Date(year, month - 1, day)
   const dayOfWeek = date.getDay()
   const hours = openingHours[dayOfWeek]
 
@@ -341,6 +348,19 @@ async function getBlockedDates() {
     console.log("[v0] Error fetching blocked dates:", error)
   }
   return []
+}
+
+async function getEmployeeBlockedDates() {
+  if (!database) return {}
+  try {
+    const snapshot = await get(employeeBlockedDatesRef)
+    if (snapshot.exists()) {
+      return snapshot.val()
+    }
+  } catch (error) {
+    console.log("[v0] Error fetching employee blocked dates:", error)
+  }
+  return {}
 }
 
 async function getAllBookings() {
@@ -423,7 +443,6 @@ bookingForm.addEventListener("submit", async (e) => {
 // Contact Form Submission
 const contactForm = document.getElementById("contactForm")
 contactForm.addEventListener("submit", async (e) => {
-  // Made async to save to Firebase
   e.preventDefault()
 
   const name = document.getElementById("contactName").value
