@@ -728,6 +728,8 @@ body {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn {
@@ -741,12 +743,14 @@ body {
 
 .modal-content {
   background-color: var(--color-white);
-  margin: 5% auto;
+  margin: 2rem auto;
   padding: 2.5rem;
   border-radius: 15px;
   max-width: 500px;
   position: relative;
   animation: slideIn 0.3s ease;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
 }
 
 @keyframes slideIn {
@@ -776,6 +780,7 @@ body {
   cursor: pointer;
   transition: var(--transition);
   padding: 0.5rem;
+  z-index: 1;
 }
 
 .close:hover {
@@ -832,5 +837,17 @@ body {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+  }
+
+  .modal-content {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: calc(100% - 2rem);
+    max-height: calc(100vh - 2rem);
+  }
+
+  .close {
+    right: 1rem;
+    top: 1rem;
   }
 }

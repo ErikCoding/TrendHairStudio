@@ -26,6 +26,11 @@ body {
   background-color: var(--color-background);
   line-height: 1.6;
   overflow-x: hidden;
+  /* Prevent mobile zoom on input focus */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .container {
@@ -124,6 +129,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  /* Added fixed background attachment for parallax effect on desktop */
+  background-attachment: fixed;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -243,6 +250,10 @@ section {
   border: 2px solid transparent;
   /* Added cursor pointer for better UX */
   cursor: pointer;
+  /* Added flex layout to ensure consistent card heights and price positioning */
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
 }
 
 .service-card:hover {
@@ -278,6 +289,8 @@ section {
   color: var(--color-text-light);
   margin-bottom: 1.5rem;
   line-height: 1.6;
+  /* Added flex-grow to push price to bottom */
+  flex-grow: 1;
 }
 
 .price {
@@ -287,12 +300,9 @@ section {
   padding: 0.5rem 1.5rem;
   border-radius: 20px;
   font-weight: 600;
-  /* Added transition */
   transition: var(--transition);
-}
-
-.service-card:hover .price {
-  transform: scale(1.05);
+  /* Ensure price stays at bottom */
+  margin-top: auto;
 }
 
 /* Gallery Section */
@@ -870,6 +880,11 @@ section {
     grid-template-columns: 1fr;
   }
 
+  /* Ensure service cards maintain consistent height on mobile */
+  .service-card {
+    min-height: 280px;
+  }
+
   .gallery-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
@@ -887,7 +902,6 @@ section {
     gap: 0.5rem;
   }
 
-  /* Better mobile form spacing */
   .booking-form,
   .contact-form {
     padding: 1.5rem;
@@ -915,6 +929,11 @@ section {
 
   .logo-img {
     height: 60px;
+  }
+
+  /* Smaller min-height for service cards on very small screens */
+  .service-card {
+    min-height: 260px;
   }
 }
 
