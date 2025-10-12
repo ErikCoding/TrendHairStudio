@@ -19,9 +19,12 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     e.preventDefault()
     const target = document.querySelector(this.getAttribute("href"))
     if (target) {
-      target.scrollIntoView({
+      const navbarHeight = document.querySelector(".navbar").offsetHeight
+      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navbarHeight
+
+      window.scrollTo({
+        top: targetPosition,
         behavior: "smooth",
-        block: "start",
       })
     }
   })
