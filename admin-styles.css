@@ -26,6 +26,10 @@ body {
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.6;
+  /* Prevent horizontal scrolling on mobile */
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* Login Screen */
@@ -189,6 +193,10 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 .admin-header {
@@ -213,12 +221,16 @@ body {
   align-items: center;
   max-width: 1400px;
   margin: 0 auto;
+  /* Prevent overflow on mobile */
+  width: 100%;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
+  /* Prevent text overflow */
+  flex-shrink: 0;
 }
 
 .notification-bell {
@@ -265,6 +277,9 @@ body {
   justify-content: center;
   gap: 0;
   padding: 0;
+  /* Enable horizontal scrolling for tabs on mobile */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Main Content */
@@ -274,6 +289,8 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  /* Prevent content from causing horizontal scroll */
+  overflow-x: hidden;
 }
 
 .tab-content {
@@ -316,6 +333,9 @@ body {
   color: var(--color-text-light);
   border-bottom: 3px solid transparent;
   transition: var(--transition);
+  /* Prevent text wrapping in tabs */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -332,30 +352,29 @@ body {
   border-bottom-color: var(--color-primary);
 }
 
-/* Bookings List */
+/* Redesigned booking cards for more compact and aesthetic layout */
 .bookings-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.875rem;
 }
 
 .booking-card {
   background-color: var(--color-white);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1.5rem;
-  align-items: center;
+  /* Reduced padding for more compact design */
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   transition: var(--transition);
+  border-left: 3px solid var(--color-primary);
 }
 
 .booking-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .booking-card.new-booking {
-  border: 2px solid var(--color-primary);
+  border-left-color: var(--color-success);
   animation: highlightNew 2s ease;
 }
 
@@ -384,32 +403,58 @@ body {
   }
 }
 
+/* New compact booking info layout */
 .booking-info {
+  /* Compact grid layout with smaller gaps */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.booking-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
 }
 
 .booking-field {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
 .booking-field label {
-  font-size: 0.85rem;
+  /* Smaller, uppercase labels for compact look */
+  font-size: 0.7rem;
   color: var(--color-text-light);
-  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .booking-field span {
   font-weight: 500;
   color: var(--color-text);
+  /* Slightly smaller text */
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
+/* Compact booking actions */
 .booking-actions {
   display: flex;
   gap: 0.5rem;
-  flex-direction: column;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.booking-actions .btn {
+  /* Smaller, more compact buttons */
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  width: auto;
 }
 
 .empty-state {
@@ -717,7 +762,7 @@ body {
   line-height: 1.6;
 }
 
-/* Modal */
+/* Fixed modal to prevent horizontal scrolling */
 .modal {
   display: none;
   position: fixed;
@@ -747,6 +792,8 @@ body {
   padding: 2.5rem;
   border-radius: 15px;
   max-width: 500px;
+  /* Ensure modal doesn't exceed viewport width */
+  width: calc(100% - 2rem);
   position: relative;
   animation: slideIn 0.3s ease;
   max-height: calc(100vh - 4rem);
@@ -807,30 +854,47 @@ body {
   .filter-controls input,
   .filter-controls select {
     width: 100%;
+    min-width: 0;
   }
 
+  /* Improved mobile layout for booking cards */
   .booking-card {
-    grid-template-columns: 1fr;
+    /* Even more compact on mobile */
+    padding: 0.875rem;
   }
 
   .booking-info {
+    /* Single column on mobile for better readability */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+
+  .booking-row {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .booking-field label {
+    font-size: 0.65rem;
+  }
+
+  .booking-field span {
+    font-size: 0.85rem;
   }
 
   .booking-actions {
-    flex-direction: row;
+    /* Stack buttons vertically on mobile */
+    flex-direction: column;
+    padding-top: 0.625rem;
   }
 
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .booking-actions .btn {
+    width: 100%;
+    padding: 0.5rem;
   }
 
   .admin-nav {
-    overflow-x: auto;
+    justify-content: flex-start;
   }
 
   .header-content {
@@ -839,15 +903,29 @@ body {
     align-items: flex-start;
   }
 
+  /* Better mobile modal sizing */
   .modal-content {
     margin: 1rem;
     padding: 1.5rem;
-    max-width: calc(100% - 2rem);
+    width: calc(100% - 2rem);
     max-height: calc(100vh - 2rem);
   }
 
   .close {
     right: 1rem;
     top: 1rem;
+  }
+
+  .login-container {
+    padding: 2rem;
+  }
+
+  /* Prevent admin name from wrapping */
+  .admin-name {
+    font-size: 0.9rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
   }
 }

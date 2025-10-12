@@ -328,8 +328,12 @@ async function loadBookings(filterDate = "", filterService = "", filterStylist =
                     <span>${booking.phone}</span>
                 </div>
                 <div class="booking-field">
-                    <label>Email</label>
-                    <span>${booking.email || "-"}</span>
+                    <label>Data</label>
+                    <span>${booking.date}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Godzina</label>
+                    <span>${booking.time}</span>
                 </div>
                 <div class="booking-field">
                     <label>Fryzjer</label>
@@ -339,14 +343,16 @@ async function loadBookings(filterDate = "", filterService = "", filterStylist =
                     <label>Usługa</label>
                     <span>${booking.service}</span>
                 </div>
+                ${
+                  booking.email
+                    ? `
                 <div class="booking-field">
-                    <label>Data</label>
-                    <span>${booking.date}</span>
+                    <label>Email</label>
+                    <span>${booking.email}</span>
                 </div>
-                <div class="booking-field">
-                    <label>Godzina</label>
-                    <span>${booking.time}</span>
-                </div>
+                `
+                    : ""
+                }
                 ${
                   booking.notes
                     ? `
