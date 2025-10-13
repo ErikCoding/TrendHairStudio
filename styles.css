@@ -374,6 +374,7 @@ section {
 /* Booking Section */
 .booking {
   background-color: var(--color-background-alt);
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .booking-container {
@@ -381,6 +382,8 @@ section {
   grid-template-columns: 1fr 2fr;
   gap: 3rem;
   margin-top: 3rem;
+  width: 100%; /* Ensure full width constraint */
+  max-width: 100%; /* Prevent overflow */
 }
 
 .booking-info {
@@ -474,6 +477,8 @@ section {
   background-color: var(--color-background-alt);
   padding: 1.5rem;
   border-radius: 10px;
+  max-width: 100%; /* Prevent calendar overflow */
+  overflow-x: auto; /* Allow scroll if needed */
 }
 
 .calendar-header {
@@ -516,6 +521,7 @@ section {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
+  max-width: 100%; /* Prevent grid overflow */
 }
 
 .calendar-day-header {
@@ -604,6 +610,7 @@ section {
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 0.75rem;
   margin-top: 0.5rem;
+  max-width: 100%; /* Prevent time slots overflow */
 }
 
 .time-slots-placeholder {
@@ -894,6 +901,7 @@ section {
   .booking-container {
     grid-template-columns: 1fr;
     gap: 2rem;
+    padding: 0; /* Remove extra padding that might cause overflow */
   }
 
   /* Make contact section single column on mobile */
@@ -910,6 +918,24 @@ section {
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    box-sizing: border-box; /* Ensure padding is included in width */
+  }
+
+  /* Reduce time slot minimum width on mobile to prevent overflow */
+  .time-slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+    gap: 0.5rem;
+  }
+
+  /* Reduce calendar grid gap on mobile */
+  .calendar-grid {
+    gap: 0.3rem;
+  }
+
+  /* Adjust calendar container padding on mobile */
+  .calendar-container {
+    padding: 1rem;
+    margin: 1rem 0;
   }
 }
 
@@ -942,6 +968,23 @@ section {
   .booking-form,
   .contact-form {
     padding: 1.25rem;
+  }
+
+  /* Further reduce time slot size on very small screens */
+  .time-slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    gap: 0.4rem;
+  }
+
+  /* Reduce calendar day font size on very small screens */
+  .calendar-day {
+    font-size: 0.8rem;
+  }
+
+  /* Reduce time slot font size and padding */
+  .time-slot {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
   }
 }
 
