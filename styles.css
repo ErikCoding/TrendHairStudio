@@ -897,11 +897,16 @@ section {
     background-repeat: no-repeat;
   }
 
+  .booking {
+        overflow-x: hidden;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
   /* Make booking section single column on mobile, matching contact section */
   .booking-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 0; /* Remove extra padding that might cause overflow */
+    max-width: 100%;
+        padding: 0;
   }
 
   /* Make contact section single column on mobile */
@@ -909,6 +914,12 @@ section {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+
+  .calendar-grid,
+    .calendar-header {
+        max-width: 100%;
+    }
+
 
   .booking-info,
   .booking-form,
@@ -924,7 +935,6 @@ section {
   /* Reduce time slot minimum width on mobile to prevent overflow */
   .time-slots-grid {
     grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-    gap: 0.5rem;
   }
 
   /* Reduce calendar grid gap on mobile */
