@@ -131,22 +131,45 @@ body {
   transition: var(--transition);
 }
 
-/* Hero Section */
-.hero {
-  background-image: url("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Interior-Photo-3-uQ3eRi0ahAtZVrZbphsqSdXF3TAnkr.jpg");
+/* FIX: replacement for background-attachment: fixed */
+.fixed-bg {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  z-index: -1; /* za całą treścią strony */
+  background-image: url("Interior-Photo-2.jpg");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  min-height: 100vh;
+  pointer-events: none; /* nie blokuje klikania */
+  will-change: transform; /* hint dla przeglądarki */
+}
+
+/* pokazujemy fixed tło tylko na szerokich ekranach (desktop) */
+@media (max-width: 768px) {
+  .fixed-bg {
+    display: none;
+  }
+}
+
+/* jeżeli chcesz uniknąć dublowania obrazu, upewnij się, że .hero nie ma tła */
+.hero {
+  background-image: none !important;
+  background-color: transparent; /* opcjonalnie */
+}
+
+.hero {
+  background-image: url("Interior-Photo-2.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* tu jest magia */
+  position: relative;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  position: relative;
-  padding: 6rem 2rem 2rem;
-  width: 100%;
-  overflow: hidden;
+  color: white;
 }
 
 .hero-overlay {
@@ -157,8 +180,6 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1;
-  /* Added smooth transition */
-  transition: var(--transition);
 }
 
 .hero .container {
@@ -235,7 +256,6 @@ body {
 section {
   padding: 6rem 0;
   position: relative;
-  transition: opacity 0.6s ease, transform 0.6s ease;
   width: 100%;
   overflow-x: hidden;
 }
@@ -635,8 +655,8 @@ section {
 }
 
 .time-slot.booked {
-  background-color: #ffebee;
-  color: var(--color-text-light);
+  background-color: #cd1732da;
+  color: black;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -869,11 +889,24 @@ section {
   .hero {
     min-height: 100vh;
     padding: 6rem 1rem 2rem;
-    background-position: center center;
-    background-attachment: scroll;
+    background-position: center;
+    background-attachment: fixed;
   }
 
-  .booking-container,
+  /* Fixed mobile centering for booking section */
+  .booking-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .booking-info,
+  .booking-form {
+    /* Ensure proper centering on mobile */
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+  }
+
   .contact-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -883,7 +916,6 @@ section {
     grid-template-columns: 1fr;
   }
 
-  /* Ensure service cards maintain consistent height on mobile */
   .service-card {
     min-height: 280px;
   }
@@ -919,8 +951,8 @@ section {
   .hero {
     min-height: 100vh;
     padding: 5rem 1rem 1.5rem;
-    background-position: center center;
-    background-attachment: scroll;
+    background-position: center;
+    background-attachment: fixed;
   }
 
   .logo-img {
@@ -934,6 +966,12 @@ section {
 
   .container {
     padding: 0 15px;
+  }
+
+  /* Better mobile padding for booking section */
+  .booking-info,
+  .booking-form {
+    padding: 1.25rem;
   }
 }
 
