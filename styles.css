@@ -144,25 +144,18 @@ body {
   will-change: transform; /* hint dla przeglądarki */
 }
 
-/* pokazujemy fixed tło tylko na szerokich ekranach (desktop) */
+/* Hide fixed-bg completely on mobile to prevent gray screen */
 @media (max-width: 768px) {
   .fixed-bg {
     display: none;
   }
 }
 
-/* jeżeli chcesz uniknąć dublowania obrazu, upewnij się, że .hero nie ma tła */
+/* Hero Section */
 .hero {
-  background-image: none !important;
-  background-color: transparent; /* opcjonalnie */
-}
-
-.hero {
-  background-image: url("Interior-Photo-2.jpg");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed; /* tu jest magia */
+  /* Remove duplicate background declaration */
+  background-image: none;
+  background-color: transparent;
   position: relative;
   height: 100vh;
   display: flex;
@@ -886,73 +879,50 @@ section {
     display: flex;
   }
 
+  /* Ensure hero background image is visible on mobile */
   .hero {
     min-height: 100vh;
     padding: 6rem 1rem 2rem;
+    background-image: url("Interior-Photo-2.jpg");
+    background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll;
+    background-repeat: no-repeat;
   }
 
-  /* Fixed mobile centering for booking section */
+  /* Make booking section single column on mobile, matching contact section */
   .booking-container {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
 
-  .booking-info,
-  .booking-form {
-    /* Ensure proper centering on mobile */
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 100%;
-  }
-
+  /* Make contact section single column on mobile */
   .contact-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
 
-  .services-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .service-card {
-    min-height: 280px;
-  }
-
-  .gallery-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-
-  .calendar-grid {
-    gap: 0.25rem;
-  }
-
-  .calendar-day {
-    font-size: 0.8rem;
-  }
-
-  .time-slots-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 0.5rem;
-  }
-
+  .booking-info,
   .booking-form,
   .contact-form {
-    padding: 1.5rem;
-  }
-
-  section {
-    padding: 4rem 0;
+    /* Ensure proper centering and width on mobile */
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
 @media (max-width: 480px) {
+  /* Ensure hero background on very small screens */
   .hero {
     min-height: 100vh;
     padding: 5rem 1rem 1.5rem;
+    background-image: url("Interior-Photo-2.jpg");
+    background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll;
+    background-repeat: no-repeat;
   }
 
   .logo-img {
@@ -968,9 +938,9 @@ section {
     padding: 0 15px;
   }
 
-  /* Better mobile padding for booking section */
   .booking-info,
-  .booking-form {
+  .booking-form,
+  .contact-form {
     padding: 1.25rem;
   }
 }
