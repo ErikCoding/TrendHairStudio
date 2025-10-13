@@ -134,21 +134,19 @@ body {
 /* FIX: replacement for background-attachment: fixed */
 .fixed-bg {
   position: fixed;
-  inset: 0; /* top:0; right:0; bottom:0; left:0; */
-  z-index: -1; /* za całą treścią strony */
+  inset: 0;                     /* top:0; right:0; bottom:0; left:0; */
+  z-index: -1;                  /* za całą treścią strony */
   background-image: url("Interior-Photo-2.jpg");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  pointer-events: none; /* nie blokuje klikania */
-  will-change: transform; /* hint dla przeglądarki */
+  pointer-events: none;         /* nie blokuje klikania */
+  will-change: transform;       /* hint dla przeglądarki */
 }
 
 /* pokazujemy fixed tło tylko na szerokich ekranach (desktop) */
 @media (max-width: 768px) {
-  .fixed-bg {
-    display: none;
-  }
+  .fixed-bg { display: none; }
 }
 
 /* jeżeli chcesz uniknąć dublowania obrazu, upewnij się, że .hero nie ma tła */
@@ -256,6 +254,7 @@ body {
 section {
   padding: 6rem 0;
   position: relative;
+  transition: opacity 0.6s ease, transform 0.6s ease;
   width: 100%;
   overflow-x: hidden;
 }
@@ -893,20 +892,7 @@ section {
     background-attachment: fixed;
   }
 
-  /* Fixed mobile centering for booking section */
-  .booking-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .booking-info,
-  .booking-form {
-    /* Ensure proper centering on mobile */
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 100%;
-  }
-
+  .booking-container,
   .contact-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -916,6 +902,7 @@ section {
     grid-template-columns: 1fr;
   }
 
+  /* Ensure service cards maintain consistent height on mobile */
   .service-card {
     min-height: 280px;
   }
@@ -966,12 +953,6 @@ section {
 
   .container {
     padding: 0 15px;
-  }
-
-  /* Better mobile padding for booking section */
-  .booking-info,
-  .booking-form {
-    padding: 1.25rem;
   }
 }
 
