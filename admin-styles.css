@@ -947,3 +947,28 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Added archive-specific styles */
+.archive-info {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #856404;
+}
+
+.archive-badge {
+  background-color: #6c757d;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.booking-card.archived {
+  opacity: 0.85;
+  border-left: 4px solid #6c757d;
+}

@@ -58,7 +58,8 @@ let app,
   blockInfoRef,
   contactMessagesRef,
   employeeBlockedDatesRef,
-  employeeBlockInfoRef
+  employeeBlockInfoRef,
+  archiveRef // Added archive reference
 try {
   app = initializeApp(firebaseConfig)
   database = getDatabase(app)
@@ -68,6 +69,7 @@ try {
   contactMessagesRef = ref(database, "contactMessages")
   employeeBlockedDatesRef = ref(database, "employeeBlockedDates")
   employeeBlockInfoRef = ref(database, "employeeBlockInfo")
+  archiveRef = ref(database, "archive") // Initialize archive reference
   console.log("[v0] Firebase initialized successfully")
 } catch (error) {
   console.error("[v0] Firebase initialization error:", error)
@@ -206,6 +208,8 @@ function showDashboard() {
       }
       updateStatistics()
       setupBookingListener()
+      archiveOldBookings()
+      cleanupOldArchive()
     } catch (error) {
       console.error("[v0] Error loading dashboard data:", error)
     }
@@ -394,6 +398,9 @@ tabButtons.forEach((button) => {
       loadBlockedDates()
     } else if (tabName === "employee-schedule") {
       loadEmployeeBlockedDates()
+    } else if (tabName === "archive") {
+      // Added archive tab handler
+      loadArchive()
     } else if (tabName === "messages") {
       loadMessages()
     } else if (tabName === "stats") {
@@ -992,26 +999,212 @@ window.editBooking = editBooking
 window.unblockDates = unblockDates
 window.unblockEmployeeDates = unblockEmployeeDates
 
-document.getElementById("filterDate")?.addEventListener("change", (e) => {
+async function archiveOldBookings() {
+  if (!database) return
+
+  try {
+    const snapshot = await get(bookingsRef)
+    if (!snapshot.exists()) return
+
+    const bookingsData = snapshot.val()
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+
+    for (const [id, booking] of Object.entries(bookingsData)) {
+      // Archive bookings that are in the past
+      if (booking.date < todayString) {
+        // Move to archive
+        const archiveBooking = {
+          ...booking,
+          archivedAt: new Date().toISOString(),
+          originalId: id,
+        }
+
+        await set(ref(database, `archive/${id}`), archiveBooking)
+
+        // Remove from active bookings
+        await remove(ref(database, `bookings/${id}`))
+
+        console.log(`[v0] Archived booking ${id} from ${booking.date}`)
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Error archiving old bookings:", error)
+  }
+}
+
+async function cleanupOldArchive() {
+  if (!database) return
+
+  try {
+    const snapshot = await get(archiveRef)
+    if (!snapshot.exists()) return
+
+    const archiveData = snapshot.val()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysAgoString = thirtyDaysAgo.toISOString()
+
+    for (const [id, booking] of Object.entries(archiveData)) {
+      // Delete archived bookings older than 30 days
+      if (booking.archivedAt && booking.archivedAt < thirtyDaysAgoString) {
+        await remove(ref(database, `archive/${id}`))
+        console.log(`[v0] Deleted archived booking ${id} from archive (older than 30 days)`)
+      }
+    }
+  } catch (error) {
+    console.error("[v0] Error cleaning up old archive:", error)
+  }
+}
+
+async function loadArchive(filterDate = "", filterService = "", filterStylist = "") {
+  if (!database) {
+    document.getElementById("archiveList").innerHTML = '<div class="empty-state">Firebase nie jest skonfigurowany</div>'
+    return
+  }
+
+  const snapshot = await get(archiveRef)
+  const archiveList = document.getElementById("archiveList")
+
+  if (!snapshot.exists()) {
+    archiveList.innerHTML = '<div class="empty-state">Brak zarchiwizowanych wizyt</div>'
+    return
+  }
+
+  const archiveData = snapshot.val()
+  let bookings = Object.keys(archiveData).map((key) => ({
+    id: key,
+    ...archiveData[key],
+  }))
+
+  // Filter bookings
+  if (filterDate) {
+    bookings = bookings.filter((b) => b.date === filterDate)
+  }
+
+  if (filterService) {
+    bookings = bookings.filter((b) => b.service === filterService)
+  }
+
+  if (filterStylist) {
+    bookings = bookings.filter((b) => b.stylist === filterStylist)
+  }
+
+  // Sort by date and time (newest first)
+  bookings.sort((a, b) => {
+    const dateA = new Date(a.date + " " + a.time)
+    const dateB = new Date(b.date + " " + b.time)
+    return dateB - dateA
+  })
+
+  if (bookings.length === 0) {
+    archiveList.innerHTML = '<div class="empty-state">Brak zarchiwizowanych wizyt</div>'
+    return
+  }
+
+  archiveList.innerHTML = bookings
+    .map((booking) => {
+      const archivedDate = new Date(booking.archivedAt).toLocaleDateString("pl-PL")
+      const daysInArchive = Math.floor((new Date() - new Date(booking.archivedAt)) / (1000 * 60 * 60 * 24))
+      const daysUntilDeletion = 30 - daysInArchive
+
+      return `
+        <div class="booking-card archived">
+            <div class="archive-badge">Zarchiwizowane ${archivedDate} (usunięcie za ${daysUntilDeletion} dni)</div>
+            <div class="booking-info">
+                <div class="booking-field">
+                    <label>Klient</label>
+                    <span>${booking.name}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Telefon</label>
+                    <span>${booking.phone}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Data</label>
+                    <span>${booking.date}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Godzina</label>
+                    <span>${booking.time}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Fryzjer</label>
+                    <span>${booking.stylist || "-"}</span>
+                </div>
+                <div class="booking-field">
+                    <label>Usługa</label>
+                    <span>${booking.service}</span>
+                </div>
+                ${
+                  booking.email
+                    ? `
+                <div class="booking-field">
+                    <label>Email</label>
+                    <span>${booking.email}</span>
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  booking.notes
+                    ? `
+                <div class="booking-field" style="grid-column: 1 / -1;">
+                    <label>Uwagi</label>
+                    <span>${booking.notes}</span>
+                </div>
+                `
+                    : ""
+                }
+            </div>
+            <div class="booking-actions">
+                <button class="btn btn-danger" onclick="deleteArchivedBooking('${booking.id}')">Usuń na stałe</button>
+            </div>
+        </div>
+    `
+    })
+    .join("")
+}
+
+async function deleteArchivedBooking(id) {
+  showConfirmModal("Czy na pewno chcesz trwale usunąć tę wizytę z archiwum?", async () => {
+    try {
+      await remove(ref(database, `archive/${id}`))
+      loadArchive()
+    } catch (error) {
+      console.error("[v0] Error deleting archived booking:", error)
+      alert("Wystąpił błąd podczas usuwania wizyty z archiwum")
+    }
+  })
+}
+
+document.getElementById("filterArchiveDate")?.addEventListener("change", (e) => {
   const filterDate = e.target.value
-  const filterService = document.getElementById("filterService").value
-  const filterStylist = document.getElementById("filterStylist").value
-  loadBookings(filterDate, filterService, filterStylist)
+  const filterService = document.getElementById("filterArchiveService").value
+  const filterStylist = document.getElementById("filterArchiveStylist").value
+  loadArchive(filterDate, filterService, filterStylist)
 })
 
-document.getElementById("filterService")?.addEventListener("change", (e) => {
-  const filterDate = document.getElementById("filterDate").value
+document.getElementById("filterArchiveService")?.addEventListener("change", (e) => {
+  const filterDate = document.getElementById("filterArchiveDate").value
   const filterService = e.target.value
-  const filterStylist = document.getElementById("filterStylist").value
-  loadBookings(filterDate, filterService, filterStylist)
+  const filterStylist = document.getElementById("filterArchiveStylist").value
+  loadArchive(filterDate, filterService, filterStylist)
 })
 
-document.getElementById("filterStylist")?.addEventListener("change", (e) => {
-  const filterDate = document.getElementById("filterDate").value
-  const filterService = document.getElementById("filterService").value
+document.getElementById("filterArchiveStylist")?.addEventListener("change", (e) => {
+  const filterDate = document.getElementById("filterArchiveDate").value
+  const filterService = document.getElementById("filterArchiveService").value
   const filterStylist = e.target.value
-  loadBookings(filterDate, filterService, filterStylist)
+  loadArchive(filterDate, filterService, filterStylist)
 })
+
+window.deleteBooking = deleteBooking
+window.editBooking = editBooking
+window.unblockDates = unblockDates
+window.unblockEmployeeDates = unblockEmployeeDates
+window.deleteArchivedBooking = deleteArchivedBooking // Added to window object
 
 async function loadMessages(filterStatus = "") {
   if (!database) {

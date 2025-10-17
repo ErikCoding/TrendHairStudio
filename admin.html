@@ -25,7 +25,6 @@
                 
                 <button type="submit" class="btn btn-primary">Zaloguj się</button>
                 
-                <!-- Updated login hint to show multiple user types -->
                 <p class="login-hint">Menedżer: admin / admin123<br>Pracownik: pracownik / pracownik123</p>
             </form>
             
@@ -44,7 +43,6 @@
                         <span class="bell-icon">🔔</span>
                         <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                     </div>
-                    <!-- Added user role display -->
                     <span class="admin-name" id="adminName">Administrator</span>
                     <button id="logoutBtn" class="btn btn-secondary">Wyloguj</button>
                 </div>
@@ -54,15 +52,15 @@
         <nav class="admin-nav">
             <button class="tab-btn active" data-tab="bookings">Rezerwacje</button>
             <button class="tab-btn" data-tab="blocked">Zablokowane daty</button>
-            <!-- Added employee schedule tab (manager only) -->
             <button class="tab-btn" data-tab="employee-schedule" id="employeeScheduleTab" style="display: none;">Grafik pracowników</button>
+            <!-- Added archive tab -->
+            <button class="tab-btn" data-tab="archive">Archiwum</button>
             <button class="tab-btn" data-tab="messages">Wiadomości</button>
             <button class="tab-btn" data-tab="stats">Statystyki</button>
         </nav>
 
         <main class="admin-content">
             <div id="bookingsTab" class="tab-content active">
-                <!-- Added manual booking button -->
                 <div class="tab-header-actions">
                     <button id="addManualBookingBtn" class="btn btn-primary">+ Dodaj wizytę</button>
                 </div>
@@ -90,7 +88,6 @@
             </div>
 
             <div id="blockedTab" class="tab-content">
-                <!-- Block button only visible for managers -->
                 <div class="tab-header-actions" id="blockDateActions">
                     <button id="addBlockBtn" class="btn btn-primary">+ Zablokuj datę</button>
                 </div>
@@ -122,7 +119,6 @@
                 <div id="blockedDatesList" class="blocked-dates-list"></div>
             </div>
 
-            <!-- Added employee schedule tab -->
             <div id="employee-scheduleTab" class="tab-content">
                 <div class="tab-header-actions">
                     <button id="addEmployeeBlockBtn" class="btn btn-primary">+ Zablokuj dni dla pracownika</button>
@@ -161,6 +157,34 @@
                 </div>
                 
                 <div id="employeeBlockedDatesList" class="blocked-dates-list"></div>
+            </div>
+
+            <!-- Added archive tab content -->
+            <div id="archiveTab" class="tab-content">
+                <div class="archive-info">
+                    <p>Stare wizyty są automatycznie archiwizowane po upływie daty. Archiwum jest automatycznie czyszczone po 30 dniach.</p>
+                </div>
+                
+                <div class="filter-controls">
+                    <input type="date" id="filterArchiveDate" placeholder="Filtruj po dacie">
+                    <select id="filterArchiveStylist">
+                        <option value="">Wszyscy fryzjerzy</option>
+                        <option value="Anna Kowalska">Anna Kowalska</option>
+                        <option value="Maria Nowak">Maria Nowak</option>
+                    </select>
+                    <select id="filterArchiveService">
+                        <option value="">Wszystkie usługi</option>
+                        <option value="Strzyżenie damskie">Strzyżenie damskie</option>
+                        <option value="Strzyżenie męskie">Strzyżenie męskie</option>
+                        <option value="Koloryzacja">Koloryzacja</option>
+                        <option value="Pasemka">Pasemka</option>
+                        <option value="Stylizacja">Stylizacja</option>
+                        <option value="Pielęgnacja">Pielęgnacja</option>
+                        <option value="Upięcie">Upięcie</option>
+                    </select>
+                </div>
+                
+                <div id="archiveList" class="bookings-list"></div>
             </div>
 
             <div id="messagesTab" class="tab-content">
@@ -203,7 +227,6 @@
         </main>
     </div>
 
-    <!-- Added manual booking modal -->
     <div id="manualBookingModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeManualBookingModal">&times;</span>
