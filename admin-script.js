@@ -1336,3 +1336,24 @@ document.getElementById("filterMessageStatus")?.addEventListener("change", (e) =
 })
 
 window.viewMessage = viewMessage
+
+document.getElementById("filterDate")?.addEventListener("change", (e) => {
+  const filterDate = e.target.value
+  const filterService = document.getElementById("filterService").value
+  const filterStylist = document.getElementById("filterStylist").value
+  loadBookings(filterDate, filterService, filterStylist)
+})
+
+document.getElementById("filterService")?.addEventListener("change", (e) => {
+  const filterDate = document.getElementById("filterDate").value
+  const filterService = e.target.value
+  const filterStylist = document.getElementById("filterStylist").value
+  loadBookings(filterDate, filterService, filterStylist)
+})
+
+document.getElementById("filterStylist")?.addEventListener("change", (e) => {
+  const filterDate = document.getElementById("filterDate").value
+  const filterService = document.getElementById("filterService").value
+  const filterStylist = e.target.value
+  loadBookings(filterDate, filterService, filterStylist)
+})
